@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NodeJS with MongoDB and CRUD</title>
+</head>
+<body>
+  <h1>Send successfully!</h1>
+  <form action="/addProduct" method="post">
+    <input type="text" placeholder="Name" name="name">
+    <input type="text" placeholder="Price" name="price">
+    <input type="text" placeholder="Quantity" name="quantity">
+    <input type="submit" value="Submit">
+  </form>
+
+  <div id="products"></div>
+
+  <div id="update"></div>
+
+  <script>
+    const loadAllProducts = () => {
+      fetch('/products')
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        const conatainer = document.getElementById('products');
+        data.forEach(product => {
+          const item = document.createElement('div');
+          item.style.display = "flex";
+          item.style.alignItems = "center";
+          item.style.justifyContent = "space-around";
+
+          item.innerHTML = `
+            <h1>${product.name}</h1>
+            <h2>${product.price}</h2>
+            <h3>${product.quantity}</h3>
+            <button onclick="loadProduct('${product._id}')">Update</button>
+            <button onclick="deleteProduct('${product._id}')">Delete</button>
+          `;
+          conatainer.appendChild(item);
+        });
+      });
+    }
+    loadAllProducts();
+
+    // Delete Product Function
+    const deleteProduct = (id) => {
+      fetch(`/delete/${id}`, {
+        method: 'DELETE'
+      })
+      .then(res => res.json())
+      .then(result => console.log('Deleted successfully'));
+    }
+
+    // Load Product Function
+    const loadProduct = (id) => {
+      fetch(`/product/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        const update = document.getElementById('update');
+        update.style.display = "flex";
+        update.style.alignItems = "center";
+        update.style.justifyContent = "space-around";
+        update.innerHTML = `
+          <h1>Update</h1>
+          <h2>${data.name}</h2>
+          <input type="text" placeholder="Price" id="updatePrice" name="updatePrice" value="${data.price}">
+          <input type="text" placeholder="Quantity" id="updateQuantity" name="updateQuantity" value="${data.quantity}">
+          <button onclick="updateProduct('${data._id}')">Submit</button>
+        `;
+      });
+    }
+
+    // Update Product Function
+    const updateProduct = (id) => {
+      const price = document.getElementById('updatePrice').value;
+      const quantity = document.getElementById('updateQuantity').value;
+      const product = {id, price, quantity};
+      fetch(`/update/${id}`, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(product)
+      })
+      .then(res => res.json())
+      .then(result => console.log('Updated successfully'));
+    }
+  </script>
+</body>
+</html>
